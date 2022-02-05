@@ -1,16 +1,20 @@
 using System.ComponentModel;
 using System.Data;
+using System.Linq.Expressions;
 using System.Reflection;
 using Dapper;
+using DapperExtensions.Predicate;
 using Npgsql;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEntity
 {
     private string connectionString;
+    private readonly ILogService _logService;
 
-    public GenericRepository(IConfiguration configuration)
+    public GenericRepository(IConfiguration configuration, ILogService logService)
     {
-        connectionString = configuration.GetConnectionString("tacirden");
+        connectionString = configuration.GetConnectionString(Constants.ConnectionStringName);
+        _logService = logService;
     }
 
     internal IDbConnection Connection
@@ -44,14 +48,14 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
             if (result.FirstOrDefault() > 0)
             {
                 resultDto.IsSuccess = true;
-                resultDto.Message = "Kayıt işlemi başarılı.";
+                resultDto.Message = "Success.";
                 resultDto.Result = result.FirstOrDefault().ToString();
                 resultDto.ResultType = ResultType.Success;
             }
             else
             {
                 resultDto.IsSuccess = false;
-                resultDto.Message = "Kayıt sırasında bir hata meydana geldi.";
+                resultDto.Message = "An error occured.";
                 resultDto.Result = result;
                 resultDto.ResultType = ResultType.Error;
             }
@@ -59,9 +63,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         catch (Exception ex)
         {
             resultDto.IsSuccess = false;
-            resultDto.Message = "Kayıt sırasında bir hata meydana geldi.";
+            resultDto.Message = "An error occured.";
             resultDto.Result = result;
             resultDto.ResultType = ResultType.Error;
+
+            _logService.Error(ex.Message);
         }
 
         return resultDto;
@@ -90,14 +96,14 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
             if (result > 0)
             {
                 resultDto.IsSuccess = true;
-                resultDto.Message = "Güncelleme işlemi başarılı.";
+                resultDto.Message = "Success.";
                 resultDto.Result = result;
                 resultDto.ResultType = ResultType.Success;
             }
             else
             {
                 resultDto.IsSuccess = false;
-                resultDto.Message = "Güncelleme sırasında bir hata meydana geldi.";
+                resultDto.Message = "An error occured.";
                 resultDto.Result = result;
                 resultDto.ResultType = ResultType.Error;
             }
@@ -105,9 +111,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         catch (Exception ex)
         {
             resultDto.IsSuccess = false;
-            resultDto.Message = "Güncelleme sırasında bir hata meydana geldi.";
+            resultDto.Message = "An error occured.";
             resultDto.Result = result;
             resultDto.ResultType = ResultType.Error;
+
+            _logService.Error(ex.Message);
         }
 
         return resultDto;
@@ -132,8 +140,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
-
-            throw;
+            _logService.Error(ex.Message);
         }
 
         return result;
@@ -157,7 +164,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
-
+            _logService.Error(ex.Message);
         }
 
         return result.FirstOrDefault();
@@ -183,7 +190,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
-
+            _logService.Error(ex.Message);
         }
 
         return result;
@@ -214,7 +221,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
-
+            _logService.Error(ex.Message);
         }
 
         return false;
@@ -237,12 +244,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
-
-            throw;
+            _logService.Error(ex.Message);
         }
     }
 
-    public virtual IEnumerable<T> GetListByExpression(string query)
+    public IEnumerable<T> GetListByExpression(string query)
     {
         var result = new List<T>();
 
@@ -262,12 +268,13 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
+            _logService.Error(ex.Message);
 
             throw;
         }
     }
 
-    public virtual dynamic GetMultipleQuery(string query)
+    public dynamic GetMultipleQuery(string query)
     {
         dynamic result;
 
@@ -287,6 +294,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : AbstractEnti
         }
         catch (Exception ex)
         {
+            _logService.Error(ex.Message);
 
             throw;
         }

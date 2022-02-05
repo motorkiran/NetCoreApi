@@ -1,12 +1,14 @@
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    public UserRepository(IConfiguration configuration) : base(configuration)
+    public UserRepository(IConfiguration configuration, ILogService logService) : base(configuration, logService)
     {
     }
 
-    public void DisableUser(int id)
+    public User GetUserByEmail(string email)
     {
-        var updateQuery = $"{UserQuery.DisableUser}{id}";
-        ExecuteScript(updateQuery);
+        var searchQuery = string.Format(UserQuery.GetUserByEmail, email);
+        var user = GetListByExpression(searchQuery).ToList().FirstOrDefault();
+
+        return user;
     }
 }

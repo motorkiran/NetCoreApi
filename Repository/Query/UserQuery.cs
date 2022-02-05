@@ -1,4 +1,4 @@
-    public static class UserQuery
-    {
-        public static string DisableUser = "UPDATE user SET is_active = true WHERE id = '{0}'";
-    }
+public static class UserQuery
+{
+    public static string GetUserByEmail = "SELECT * FROM " + Constants.DbSchema + ".user WHERE email = '{0}'";
+}
